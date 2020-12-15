@@ -149,19 +149,21 @@ module.exports = function(schema, options) {
   };
 
   schema.methods.authenticate = function(password, cb) {
-    const promise = Promise.resolve().then(() => {
-      if (this.get(options.saltField)) {
-        return authenticate(this, password, options);
-      }
+    const promise = Promise.resolve()
+      .then(() => {
+        if (this.get(options.saltField)) {
+          return this;
+        }
 
-      return this.constructor.findByUsername(this.get(options.usernameField), true).then(user => {
+        return this.constructor.findByUsername(this.get(options.usernameField), true);
+      })
+      .then(user => {
         if (user) {
           return authenticate(user, password, options);
         }
 
         return { user: false, error: new errors.IncorrectUsernameError(options.errorMessages.IncorrectUsernameError) };
       });
-    });
 
     if (!cb) {
       return promise;
